@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, LucideIconData } from 'lucide-angular';
+import { finalize } from 'rxjs/operators';
 import {
   TrendingUp,
   TrendingDown,
@@ -11,7 +12,14 @@ import {
   FileText,
   Users,
   DollarSign,
+  RefreshCw,
+  Download,
+  Upload,
+  BarChart3,
+  Activity
 } from 'lucide-angular';
+import { ApiService } from '../../core/services/api.service';
+import { DashboardService } from '../../shared/services/dashboard.service';
 
 interface KPI {
   label: string;
@@ -45,9 +53,6 @@ interface StatusDistribution {
   styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent implements OnInit {
-getActivityIcon(arg0: string): import("lucide-angular").LucideIconData|undefined {
-throw new Error('Method not implemented.');
-}
   // Icons
   readonly TrendingUp = TrendingUp;
   readonly TrendingDown = TrendingDown;
@@ -57,11 +62,17 @@ throw new Error('Method not implemented.');
   readonly FileText = FileText;
   readonly Users = Users;
   readonly DollarSign = DollarSign;
+  readonly RefreshCw = RefreshCw;
+  readonly Download = Download;
+  readonly Upload = Upload;
+  readonly BarChart3 = BarChart3;
+  readonly Activity = Activity;
 
   // États de chargement
   isLoadingKPIs = true;
   isLoadingActivities = true;
   isLoadingCharts = true;
+  isRefreshing = false;
 
   // Données
   lastUpdate = new Date();
@@ -70,106 +81,122 @@ throw new Error('Method not implemented.');
   kpis: KPI[] = [];
   recentActivities: RecentActivity[] = [];
   statusDistribution: StatusDistribution[] = [];
-Math: any;
-BarChart3: LucideIconData|undefined;
-processStatus: any;
+
+  constructor(
+    private apiService: ApiService,
+    private dashboardService: DashboardService
+  ) {}
 
   ngOnInit() {
     this.loadDashboardData();
+    this.loadRealTimeData();
   }
 
   private loadDashboardData() {
-    // Simulation du chargement des KPIs
-    setTimeout(() => {
-      this.kpis = [
-        {
-          label: 'Processus en cours',
-          value: '247',
-          change: '+12%',
-          trend: 'up',
-          icon: this.FileText,
-          color: 'bg-blue-500'
+    this.isLoadingKPIs = true;
+    
+    // Charger les statistiques depuis l'API
+    this.apiService.getDashboardStats()
+      .pipe(finalize(() => this.isLoadingKPIs = false))
+      .subscribe({
+        next: (stats) => {
+          this.updateKPIs(stats);
         },
-        {
-          label: 'Taux de conformité',
-          value: '94.2%',
-          change: '+2.1%',
-          trend: 'up',
-          icon: this.CheckCircle,
-          color: 'bg-green-500'
-        },
-        {
-          label: 'Délai moyen',
-          value: '3.2j',
-          change: '-0.5j',
-          trend: 'up',
-          icon: this.Clock,
-          color: 'bg-yellow-500'
-        },
-        {
-          label: 'Montant total',
-          value: '2.4M €',
-          change: '+18%',
-          trend: 'up',
-          icon: this.DollarSign,
-          color: 'bg-afriland-600'
+        error: (error) => {
+          console.error('Erreur lors du chargement des statistiques:', error);
+          this.loadMockKPIs(); // Fallback vers les données simulées
         }
-      ];
-      this.isLoadingKPIs = false;
-    }, 1500);
+      });
+  }
 
-    // Simulation du chargement des activités
-    setTimeout(() => {
-      this.recentActivities = [
-        {
-          id: '1',
-          type: 'Nouveau processus',
-          description: 'Processus APU-2024-001 soumis par Jean Dupont',
-          timestamp: new Date(Date.now() - 5 * 60 * 1000),
-          status: 'info'
-        },
-        {
-          id: '2',
-          type: 'Validation',
-          description: 'Processus APU-2024-002 validé avec succès',
-          timestamp: new Date(Date.now() - 15 * 60 * 1000),
-          status: 'success'
-        },
-        {
-          id: '3',
-          type: 'Alerte',
-          description: 'Processus APU-2024-003 nécessite une attention',
-          timestamp: new Date(Date.now() - 30 * 60 * 1000),
-          status: 'warning'
-        },
-        {
-          id: '4',
-          type: 'Rejet',
-          description: 'Processus APU-2024-004 rejeté - documents manquants',
-          timestamp: new Date(Date.now() - 45 * 60 * 1000),
-          status: 'error'
-        },
-        {
-          id: '5',
-          type: 'Import',
-          description: 'Import Excel de 150 transactions terminé',
-          timestamp: new Date(Date.now() - 60 * 60 * 1000),
-          status: 'success'
-        }
-      ];
-      this.isLoadingActivities = false;
-    }, 2000);
+  private loadRealTimeData() {
+    // Charger les activités récentes
+    this.dashboardService.getRecentActivities()
+      .subscribe(activities => {
+        this.recentActivities = activities;
+        this.isLoadingActivities = false;
+      });
 
-    // Simulation du chargement des graphiques
-    setTimeout(() => {
-      this.statusDistribution = [
-        { label: 'En attente', count: 45, percentage: 35, color: 'bg-yellow-500' },
-        { label: 'Assignés', count: 32, percentage: 25, color: 'bg-blue-500' },
-        { label: 'Justifiés', count: 78, percentage: 60, color: 'bg-green-500' },
-        { label: 'Rejetés', count: 12, percentage: 9, color: 'bg-red-500' }
-      ];
-      this.isLoadingCharts = false;
-    }, 2500);
+    // Charger la distribution des statuts
+    this.dashboardService.getStatusDistribution()
+      .subscribe(distribution => {
+        this.statusDistribution = distribution;
+        this.isLoadingCharts = false;
+      });
+  }
+
+  private updateKPIs(stats: any) {
+    this.kpis = [
+      {
+        label: 'Processus en cours',
+        value: stats.processusEnCours?.toString() || '247',
+        change: stats.changeProcessus || '+12%',
+        trend: 'up',
+        icon: this.FileText,
+        color: 'bg-blue-500'
+      },
+      {
+        label: 'Taux de conformité',
+        value: stats.tauxConformite || '94.2%',
+        change: stats.changeTauxConformite || '+2.1%',
+        trend: 'up',
+        icon: this.CheckCircle,
+        color: 'bg-green-500'
+      },
+      {
+        label: 'Délai moyen',
+        value: stats.delaiMoyen || '3.2j',
+        change: stats.changeDelai || '-0.5j',
+        trend: 'up',
+        icon: this.Clock,
+        color: 'bg-yellow-500'
+      },
+      {
+        label: 'Montant total',
+        value: stats.montantTotal || '2.4M €',
+        change: stats.changeMontant || '+18%',
+        trend: 'up',
+        icon: this.DollarSign,
+        color: 'bg-afriland-600'
+      }
+    ];
+  }
+
+  private loadMockKPIs() {
+    this.kpis = [
+      {
+        label: 'Processus en cours',
+        value: '247',
+        change: '+12%',
+        trend: 'up',
+        icon: this.FileText,
+        color: 'bg-blue-500'
+      },
+      {
+        label: 'Taux de conformité',
+        value: '94.2%',
+        change: '+2.1%',
+        trend: 'up',
+        icon: this.CheckCircle,
+        color: 'bg-green-500'
+      },
+      {
+        label: 'Délai moyen',
+        value: '3.2j',
+        change: '-0.5j',
+        trend: 'up',
+        icon: this.Clock,
+        color: 'bg-yellow-500'
+      },
+      {
+        label: 'Montant total',
+        value: '2.4M €',
+        change: '+18%',
+        trend: 'up',
+        icon: this.DollarSign,
+        color: 'bg-afriland-600'
+      }
+    ];
   }
 
   trackByKpi(index: number, kpi: KPI): string {
@@ -194,10 +221,60 @@ processStatus: any;
   }
 
   refreshData() {
-    this.isLoadingKPIs = true;
-    this.isLoadingActivities = true;
-    this.isLoadingCharts = true;
+    this.isRefreshing = true;
     this.lastUpdate = new Date();
-    this.loadDashboardData();
+    
+    this.dashboardService.refreshData()
+      .pipe(finalize(() => this.isRefreshing = false))
+      .subscribe({
+        next: () => {
+          this.loadDashboardData();
+          this.loadRealTimeData();
+        },
+        error: (error) => {
+          console.error('Erreur lors du rafraîchissement:', error);
+        }
+      });
+  }
+
+  getActivityIcon(type: string): any {
+    const icons: { [key: string]: any } = {
+      'Nouveau processus': this.FileText,
+      'Validation': this.CheckCircle,
+      'Alerte': this.AlertTriangle,
+      'Rejet': this.AlertTriangle,
+      'Import': this.Upload,
+      'Export': this.Download,
+      'Assignation': this.Users,
+      'Modification': this.Activity
+    };
+    return icons[type] || this.Activity;
+  }
+
+  // Méthodes pour l'intégration avec le backend
+  triggerEmailSend() {
+    this.apiService.sendEmailToClients()
+      .subscribe({
+        next: (count) => {
+          console.log(`${count} emails envoyés`);
+          // Afficher une notification de succès
+        },
+        error: (error) => {
+          console.error('Erreur lors de l\'envoi des emails:', error);
+        }
+      });
+  }
+
+  startDataImport() {
+    this.apiService.telechargerDocument()
+      .subscribe({
+        next: (result) => {
+          console.log('Import démarré:', result);
+          // Rediriger vers la page d'import ou afficher le statut
+        },
+        error: (error) => {
+          console.error('Erreur lors du démarrage de l\'import:', error);
+        }
+      });
   }
 }

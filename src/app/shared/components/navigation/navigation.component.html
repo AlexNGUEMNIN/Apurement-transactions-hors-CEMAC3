@@ -129,6 +129,18 @@
 
       <div class="nav-item">
         <a
+          routerLink="/configuration/notifications"
+          routerLinkActive="active"
+          class="nav-link"
+          (click)="closeSidebarOnMobile()"
+        >
+          <lucide-angular [img]="Settings" class="nav-icon"></lucide-angular>
+          <span class="nav-text">Configuration</span>
+        </a>
+      </div>
+
+      <div class="nav-item">
+        <a
           routerLink="/utilisateurs"
           routerLinkActive="active"
           class="nav-link"
@@ -139,17 +151,6 @@
         </a>
       </div>
 
-      <div class="nav-item">
-        <a
-          routerLink="/parametres"
-          routerLinkActive="active"
-          class="nav-link"
-          (click)="closeSidebarOnMobile()"
-        >
-          <lucide-angular [img]="Settings" class="nav-icon"></lucide-angular>
-          <span class="nav-text">Paramètres</span>
-        </a>
-      </div>
     </div>
   </div>
 

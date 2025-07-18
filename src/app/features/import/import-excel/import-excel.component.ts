@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, finalize } from 'rxjs';
 import {
   Upload,
   FileSpreadsheet,
@@ -28,6 +28,7 @@ import {
   FileUp,
   FileCheck
 } from 'lucide-angular';
+import { ApiService } from '../../../core/services/api.service';
 
 interface ImportResult {
   total: number;
@@ -130,6 +131,8 @@ export class ImportExcelComponent implements OnInit, OnDestroy {
   // Validation
   validationErrors: ImportError[] = [];
 
+  constructor(private apiService: ApiService) {}
+
   // Étapes du processus
   importSteps: ImportStep[] = [
     {
@@ -203,12 +206,30 @@ export class ImportExcelComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit() {
-    // Initialiser les données si nécessaire
+    this.initializeImport();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private initializeImport() {
+    // Vérifier la connectivité avec le backend
+    this.checkBackendConnection();
+  }
+
+  private checkBackendConnection() {
+    // Test de connectivité avec le backend
+    this.apiService.getDashboardStats()
+      .subscribe({
+        next: () => {
+          console.log('Connexion backend établie');
+        },
+        error: (error) => {
+          console.warn('Connexion backend non disponible, mode simulation activé');
+        }
+      });
   }
 
   onDragOver(event: DragEvent) {
@@ -271,46 +292,48 @@ export class ImportExcelComponent implements OnInit, OnDestroy {
   }
 
   private loadPreview(file: File) {
-    // Simulation de lecture du fichier et génération d'aperçu
-    setTimeout(() => {
-      this.previewHeaders = this.requiredColumns.slice(0, 6); // Show first 6 columns
-      this.previewData = [
-        [
-          'RES001',
-          'Douala Centre',
-          'EMP001',
-          '1234****5678',
-          'DUPONT Jean',
-          'DUPONT',
-        ],
-        [
-          'RES002',
-          'Yaoundé Nlongkak',
-          'EMP002',
-          '5678****1234',
-          'MARTIN Marie',
-          'MARTIN',
-        ],
-        [
-          'RES001',
-          'Bafoussam',
-          'EMP003',
-          '9012****3456',
-          'BERNARD Paul',
-          'BERNARD',
-        ],
-        [
-          'RES003',
-          'Garoua',
-          'EMP004',
-          '3456****7890',
-          'DURAND Sophie',
-          'DURAND',
-        ],
-      ];
-      this.totalRows = 1250; // Simulate total rows
+    this.isLoading = true;
+    
+    // Utiliser l'API pour lire le fichier
+    this.apiService.readFile(10)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isLoading = false)
+      )
+      .subscribe({
+        next: (data) => {
+          this.processPreviewData(data);
+        },
+        error: (error) => {
+          console.error('Erreur lors de la lecture du fichier:', error);
+          this.loadMockPreview(); // Fallback vers les données simulées
+        }
+      });
+  }
+
+  private processPreviewData(data: Map<string, Object>) {
+    // Traiter les données reçues de l'API
+    const entries = Array.from(data.entries());
+    if (entries.length > 0) {
+      this.previewHeaders = Object.keys(entries[0][1] as any);
+      this.previewData = entries.map(([key, value]) => 
+        Object.values(value as any).map(v => v?.toString() || '')
+      );
+      this.totalRows = entries.length;
       this.isFileValid = true;
-    }, 1000);
+    }
+  }
+
+  private loadMockPreview() {
+    this.previewHeaders = this.requiredColumns.slice(0, 6);
+    this.previewData = [
+      ['RES001', 'Douala Centre', 'EMP001', '1234****5678', 'DUPONT Jean', 'DUPONT'],
+      ['RES002', 'Yaoundé Nlongkak', 'EMP002', '5678****1234', 'MARTIN Marie', 'MARTIN'],
+      ['RES001', 'Bafoussam', 'EMP003', '9012****3456', 'BERNARD Paul', 'BERNARD'],
+      ['RES003', 'Garoua', 'EMP004', '3456****7890', 'DURAND Sophie', 'DURAND'],
+    ];
+    this.totalRows = 1250;
+    this.isFileValid = true;
   }
 
   togglePreview() {
@@ -414,7 +437,33 @@ export class ImportExcelComponent implements OnInit, OnDestroy {
     this.processedRows = 0;
     this.progressPercentage = 0;
 
-    // Simulation du processus d'import
+    // Utiliser l'API pour traiter le fichier
+    this.apiService.streamExcelData()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isProcessing = false)
+      )
+      .subscribe({
+        next: (data) => {
+          this.processedRows++;
+          this.progressPercentage = Math.min(
+            (this.processedRows / this.totalRows) * 100,
+            100
+          );
+          this.updateProcessingMessage();
+        },
+        error: (error) => {
+          console.error('Erreur lors du traitement:', error);
+          this.simulateImport(); // Fallback vers la simulation
+        },
+        complete: () => {
+          this.completeImport();
+        }
+      });
+  }
+
+  private simulateImport() {
+    // Simulation de fallback
     const interval = setInterval(() => {
       this.processedRows += Math.floor(Math.random() * 50) + 10;
       this.progressPercentage = Math.min(
@@ -477,7 +526,18 @@ export class ImportExcelComponent implements OnInit, OnDestroy {
 
   downloadTemplate(template: any) {
     console.log('Téléchargement du template:', template.name);
-    // Logique pour télécharger le template
+    
+    // Utiliser l'API pour télécharger le template
+    this.apiService.telechargerDocument()
+      .subscribe({
+        next: (result) => {
+          console.log('Template téléchargé:', result);
+          // Logique pour déclencher le téléchargement
+        },
+        error: (error) => {
+          console.error('Erreur lors du téléchargement:', error);
+        }
+      });
   }
 
   downloadErrorReport() {
@@ -539,6 +599,63 @@ export class ImportExcelComponent implements OnInit, OnDestroy {
   getSuccessRate(): number {
     if (!this.importResult) return 0;
     return Math.round((this.importResult.success || 0) / this.importResult.total * 100);
+  }
+
+  // Nouvelles méthodes pour l'intégration backend
+  startParallelImport() {
+    this.isProcessing = true;
+    
+    this.apiService.readFileParallele(this.importConfig.skipEmptyRows ? 10 : 5)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isProcessing = false)
+      )
+      .subscribe({
+        next: (data) => {
+          console.log('Données traitées en parallèle:', data);
+          this.processedRows++;
+          this.updateProgress();
+        },
+        error: (error) => {
+          console.error('Erreur import parallèle:', error);
+          this.simulateImport();
+        }
+      });
+  }
+
+  private updateProgress() {
+    this.progressPercentage = Math.min(
+      (this.processedRows / this.totalRows) * 100,
+      100
+    );
+    
+    if (this.progressPercentage >= 100) {
+      this.completeImport();
+    }
+  }
+
+  validateFileStructure(): boolean {
+    // Validation de la structure du fichier
+    if (!this.previewHeaders || this.previewHeaders.length === 0) {
+      return false;
+    }
+
+    // Vérifier que les colonnes requises sont présentes
+    const missingColumns = this.requiredColumns.filter(
+      col => !this.previewHeaders.includes(col)
+    );
+
+    if (missingColumns.length > 0) {
+      this.importErrors.push({
+        row: 0,
+        column: 'Structure',
+        message: `Colonnes manquantes: ${missingColumns.join(', ')}`,
+        type: 'error'
+      });
+      return false;
+    }
+
+    return true;
   }
 }
  

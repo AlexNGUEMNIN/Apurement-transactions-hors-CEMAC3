@@ -1,0 +1,645 @@
+<!-- Header avec navigation -->
+<div class="bg-gradient-to-r from-afriland-700 to-afriland-800 text-white p-6 rounded-lg mb-6 shadow-lg">
+  <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+    <div>
+      <h1 class="text-3xl font-bold mb-2 flex items-center gap-3">
+        <lucide-icon [img]="Settings" class="h-8 w-8"></lucide-icon>
+        Configuration des Notifications
+      </h1>
+      <p class="text-afriland-100">
+        Gérez les paramètres de notification pour les processus d'apurement
+      </p>
+    </div>
+
+    <!-- Indicateur de statut -->
+    <div class="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-lg p-3">
+      <div class="flex items-center gap-2">
+        <lucide-icon [img]="CheckCircle" class="h-5 w-5 text-green-300"></lucide-icon>
+        <span class="text-sm">{{ configurations.filter(c => c.actif).length }} actives</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <lucide-icon [img]="Bell" class="h-5 w-5 text-blue-300"></lucide-icon>
+        <span class="text-sm">{{ canaux.filter(c => c.actif).length }} canaux</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation par onglets -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+  <nav class="flex space-x-8 px-6 py-4 border-b border-gray-200">
+    <button
+      *ngFor="let tab of [
+        { key: 'config', label: 'Configurations', icon: Sliders },
+        { key: 'canaux', label: 'Canaux', icon: MessageSquare },
+        { key: 'templates', label: 'Templates', icon: Mail }
+      ]"
+      (click)="setActiveTab(tab.key as any)"
+      [class]="'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ' +
+        (activeTab === tab.key 
+          ? 'bg-afriland-100 text-afriland-700 border border-afriland-200' 
+          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50')"
+    >
+      <lucide-icon [img]="tab.icon" class="h-5 w-5"></lucide-icon>
+      {{ tab.label }}
+    </button>
+  </nav>
+</div>
+
+<!-- Contenu des onglets -->
+<div class="space-y-6">
+  <!-- Onglet Configurations -->
+  <div *ngIf="activeTab === 'config'" class="animate-fade-in">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Liste des configurations -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold text-gray-900">Configurations</h2>
+          <button
+            (click)="editConfig({} as NotificationConfig)"
+            class="btn-primary flex items-center gap-2"
+          >
+            <lucide-icon [img]="Plus" class="h-4 w-4"></lucide-icon>
+            Nouvelle configuration
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <div
+            *ngFor="let config of configurations; trackBy: trackByConfig"
+            class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200"
+            [class.border-afriland-300]="selectedConfig?.id === config.id"
+          >
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-3 h-3 rounded-full"
+                  [class]="config.actif ? 'bg-green-500' : 'bg-gray-400'"
+                ></div>
+                <h3 class="font-medium text-gray-900">{{ config.libelle }}</h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  (click)="editConfig(config)"
+                  class="p-1 text-gray-400 hover:text-gray-600 rounded"
+                >
+                  <lucide-icon [img]="Edit" class="h-4 w-4"></lucide-icon>
+                </button>
+                <button
+                  (click)="deleteConfig(config)"
+                  class="p-1 text-red-400 hover:text-red-600 rounded"
+                >
+                  <lucide-icon [img]="Trash2" class="h-4 w-4"></lucide-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="text-sm text-gray-600 mb-3">
+              {{ config.description }}
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <lucide-icon [img]="Clock" class="h-4 w-4 text-gray-400"></lucide-icon>
+                <span class="text-sm text-gray-600">J+{{ config.delaiJours }}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <lucide-icon
+                  *ngFor="let canal of config.canaux"
+                  [img]="getCanalIcon(canal)"
+                  class="h-4 w-4 text-afriland-600"
+                ></lucide-icon>
+              </div>
+            </div>
+
+            <!-- Barre de progression du délai -->
+            <div class="mt-3">
+              <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+                <span>Délai: {{ config.delaiJours }} jours</span>
+                <span>{{ getConfigTypeLabel(config.type) }}</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  class="bg-afriland-600 h-2 rounded-full transition-all duration-300"
+                  [style.width.%]="(config.delaiJours / 38) * 100"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire d'édition -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">
+          {{ selectedConfig?.id ? 'Modifier' : 'Nouvelle' }} Configuration
+        </h2>
+
+        <form [formGroup]="configForm" (ngSubmit)="saveConfig()" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Type de notification *
+              </label>
+              <select formControlName="type" class="form-input">
+                <option value="">Sélectionner...</option>
+                <option value="INITIAL">Notification initiale</option>
+                <option value="RELANCE">Première relance</option>
+                <option value="MISE_EN_DEMEURE">Mise en demeure</option>
+                <option value="SUSPENSION">Suspension</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Délai (jours) *
+              </label>
+              <input
+                type="number"
+                formControlName="delaiJours"
+                min="0"
+                max="365"
+                class="form-input"
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Libellé *
+            </label>
+            <input
+              type="text"
+              formControlName="libelle"
+              class="form-input"
+              placeholder="Nom de la configuration"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea
+              formControlName="description"
+              rows="3"
+              class="form-input"
+              placeholder="Description de la configuration"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Canaux de notification *
+            </label>
+            <div class="grid grid-cols-3 gap-4">
+              <div
+                *ngFor="let canal of ['EMAIL', 'SMS', 'WHATSAPP']"
+                class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                [class.border-afriland-500]="isCanalSelected(configForm.value, canal)"
+                [class.bg-afriland-50]="isCanalSelected(configForm.value, canal)"
+                (click)="toggleCanal(configForm.value, canal)"
+              >
+                <lucide-icon [img]="getCanalIcon(canal)" class="h-5 w-5 mr-2 text-afriland-600"></lucide-icon>
+                <span class="text-sm font-medium">{{ canal }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              formControlName="actif"
+              class="h-4 w-4 text-afriland-600 focus:ring-afriland-500 border-gray-300 rounded"
+            />
+            <label class="ml-2 text-sm text-gray-700">
+              Configuration active
+            </label>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              (click)="resetForms()"
+              class="btn-secondary"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              [disabled]="configForm.invalid || isSaving"
+              class="btn-primary disabled:opacity-50"
+            >
+              <lucide-icon *ngIf="isSaving" [img]="Clock" class="h-4 w-4 mr-2 animate-spin"></lucide-icon>
+              <lucide-icon *ngIf="!isSaving" [img]="Save" class="h-4 w-4 mr-2"></lucide-icon>
+              {{ selectedConfig?.id ? 'Modifier' : 'Créer' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onglet Canaux -->
+  <div *ngIf="activeTab === 'canaux'" class="animate-fade-in">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Liste des canaux -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold text-gray-900">Canaux de communication</h2>
+          <button
+            (click)="editCanal({} as Canal)"
+            class="btn-primary flex items-center gap-2"
+          >
+            <lucide-icon [img]="Plus" class="h-4 w-4"></lucide-icon>
+            Nouveau canal
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <div
+            *ngFor="let canal of canaux; trackBy: trackByCanal"
+            class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200"
+          >
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <lucide-icon [img]="getCanalIcon(canal.type)" class="h-6 w-6 text-afriland-600"></lucide-icon>
+                <div>
+                  <h3 class="font-medium text-gray-900">{{ canal.nom }}</h3>
+                  <p class="text-sm text-gray-500">{{ canal.type }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-3 h-3 rounded-full"
+                  [class]="canal.actif ? 'bg-green-500' : 'bg-gray-400'"
+                ></div>
+                <button
+                  (click)="testCanal(canal)"
+                  class="p-1 text-blue-400 hover:text-blue-600 rounded"
+                  title="Tester la connectivité"
+                >
+                  <lucide-icon [img]="getStatusIcon(testResults[canal.id!])" class="h-4 w-4"></lucide-icon>
+                </button>
+                <button
+                  (click)="editCanal(canal)"
+                  class="p-1 text-gray-400 hover:text-gray-600 rounded"
+                >
+                  <lucide-icon [img]="Edit" class="h-4 w-4"></lucide-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Résultat du test -->
+            <div *ngIf="testResults[canal.id!] !== undefined" class="mt-2">
+              <div
+                class="flex items-center gap-2 text-sm p-2 rounded"
+                [class]="testResults[canal.id!] 
+                  ? 'bg-green-50 text-green-700' 
+                  : 'bg-red-50 text-red-700'"
+              >
+                <lucide-icon [img]="getStatusIcon(testResults[canal.id!])" class="h-4 w-4"></lucide-icon>
+                <span>
+                  {{ testResults[canal.id!] ? 'Test réussi' : 'Test échoué' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire canal -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">
+          Configuration du canal
+        </h2>
+
+        <form [formGroup]="canalForm" (ngSubmit)="saveCanal()" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Nom du canal *
+              </label>
+              <input
+                type="text"
+                formControlName="nom"
+                class="form-input"
+                placeholder="Nom du canal"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Type *
+              </label>
+              <select formControlName="type" class="form-input">
+                <option value="EMAIL">Email</option>
+                <option value="SMS">SMS</option>
+                <option value="WHATSAPP">WhatsApp</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Configuration spécifique par type -->
+          <div formGroupName="configuration" class="space-y-4">
+            <div *ngIf="canalForm.get('type')?.value === 'EMAIL'">
+              <h3 class="text-lg font-medium text-gray-900 mb-3">Configuration Email</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Serveur SMTP
+                  </label>
+                  <input
+                    type="text"
+                    formControlName="serveur"
+                    class="form-input"
+                    placeholder="smtp.gmail.com"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Port
+                  </label>
+                  <input
+                    type="number"
+                    formControlName="port"
+                    class="form-input"
+                    placeholder="587"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Utilisateur
+                  </label>
+                  <input
+                    type="email"
+                    formControlName="utilisateur"
+                    class="form-input"
+                    placeholder="email@example.com"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Mot de passe
+                  </label>
+                  <input
+                    type="password"
+                    formControlName="motDePasse"
+                    class="form-input"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="canalForm.get('type')?.value === 'SMS'">
+              <h3 class="text-lg font-medium text-gray-900 mb-3">Configuration SMS</h3>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Clé API
+                </label>
+                <input
+                  type="text"
+                  formControlName="apiKey"
+                  class="form-input"
+                  placeholder="Votre clé API SMS"
+                />
+              </div>
+            </div>
+
+            <div *ngIf="canalForm.get('type')?.value === 'WHATSAPP'">
+              <h3 class="text-lg font-medium text-gray-900 mb-3">Configuration WhatsApp</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Webhook URL
+                  </label>
+                  <input
+                    type="url"
+                    formControlName="webhook"
+                    class="form-input"
+                    placeholder="https://api.whatsapp.com/webhook"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Token d'accès
+                  </label>
+                  <input
+                    type="text"
+                    formControlName="apiKey"
+                    class="form-input"
+                    placeholder="Votre token WhatsApp Business"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              formControlName="actif"
+              class="h-4 w-4 text-afriland-600 focus:ring-afriland-500 border-gray-300 rounded"
+            />
+            <label class="ml-2 text-sm text-gray-700">
+              Canal actif
+            </label>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              (click)="resetForms()"
+              class="btn-secondary"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              [disabled]="canalForm.invalid || isSaving"
+              class="btn-primary disabled:opacity-50"
+            >
+              <lucide-icon *ngIf="isSaving" [img]="Clock" class="h-4 w-4 mr-2 animate-spin"></lucide-icon>
+              <lucide-icon *ngIf="!isSaving" [img]="Save" class="h-4 w-4 mr-2"></lucide-icon>
+              Sauvegarder
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onglet Templates -->
+  <div *ngIf="activeTab === 'templates'" class="animate-fade-in">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Liste des templates -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold text-gray-900">Templates de messages</h2>
+          <button
+            (click)="editTemplate({} as NotificationTemplate)"
+            class="btn-primary flex items-center gap-2"
+          >
+            <lucide-icon [img]="Plus" class="h-4 w-4"></lucide-icon>
+            Nouveau template
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <div
+            *ngFor="let template of templates; trackBy: trackByTemplate"
+            class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200"
+          >
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <lucide-icon [img]="getCanalIcon(template.type)" class="h-5 w-5 text-afriland-600"></lucide-icon>
+                <div>
+                  <h3 class="font-medium text-gray-900">{{ template.nom }}</h3>
+                  <p class="text-sm text-gray-500">{{ template.type }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  (click)="togglePreview()"
+                  class="p-1 text-blue-400 hover:text-blue-600 rounded"
+                  title="Prévisualiser"
+                >
+                  <lucide-icon [img]="Eye" class="h-4 w-4"></lucide-icon>
+                </button>
+                <button
+                  (click)="editTemplate(template)"
+                  class="p-1 text-gray-400 hover:text-gray-600 rounded"
+                >
+                  <lucide-icon [img]="Edit" class="h-4 w-4"></lucide-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="text-sm text-gray-600 mb-2">
+              <strong>Sujet:</strong> {{ template.sujet }}
+            </div>
+
+            <div class="text-sm text-gray-500 line-clamp-2">
+              {{ template.contenu }}
+            </div>
+
+            <!-- Variables disponibles -->
+            <div class="mt-3 flex flex-wrap gap-1">
+              <span
+                *ngFor="let variable of template.variables"
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700"
+              >
+                {{variable}}
+              </span>
+            </div>
+
+            <!-- Prévisualisation -->
+            <div *ngIf="showPreview && selectedTemplate?.id === template.id" class="mt-4 p-3 bg-gray-50 rounded-lg">
+              <h4 class="text-sm font-medium text-gray-900 mb-2">Prévisualisation:</h4>
+              <div class="text-sm text-gray-700 whitespace-pre-line">
+                {{ previewTemplate(template) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire template -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">
+          {{ selectedTemplate?.id ? 'Modifier' : 'Nouveau' }} Template
+        </h2>
+
+        <form [formGroup]="templateForm" (ngSubmit)="saveTemplate()" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Nom du template *
+              </label>
+              <input
+                type="text"
+                formControlName="nom"
+                class="form-input"
+                placeholder="Nom du template"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Type *
+              </label>
+              <select formControlName="type" class="form-input">
+                <option value="EMAIL">Email</option>
+                <option value="SMS">SMS</option>
+                <option value="WHATSAPP">WhatsApp</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Sujet *
+            </label>
+            <input
+              type="text"
+              formControlName="sujet"
+              class="form-input"
+              placeholder="Sujet du message"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Contenu du message *
+            </label>
+            <textarea
+              formControlName="contenu"
+              rows="8"
+              class="form-input"
+              placeholder="Contenu du message avec variables {{nomClient}}, {{montant}}, etc."
+            ></textarea>
+            <p class="mt-1 text-xs text-gray-500">
+              Utilisez {{variable}} pour insérer des variables dynamiques
+            </p>
+          </div>
+
+          <!-- Variables disponibles -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Variables disponibles
+            </label>
+            <div class="flex flex-wrap gap-2">
+              <span
+                *ngFor="let variable of ['nomClient', 'montant', 'devise', 'dateTransaction', 'numeroCartePartiel', 'joursRestants']"
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-afriland-100 text-afriland-700 cursor-pointer hover:bg-afriland-200"
+                (click)="insertVariable(variable)"
+              >
+                {{variable}}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              (click)="resetForms()"
+              class="btn-secondary"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              [disabled]="templateForm.invalid || isSaving"
+              class="btn-primary disabled:opacity-50"
+            >
+              <lucide-icon *ngIf="isSaving" [img]="Clock" class="h-4 w-4 mr-2 animate-spin"></lucide-icon>
+              <lucide-icon *ngIf="!isSaving" [img]="Save" class="h-4 w-4 mr-2"></lucide-icon>
+              {{ selectedTemplate?.id ? 'Modifier' : 'Créer' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

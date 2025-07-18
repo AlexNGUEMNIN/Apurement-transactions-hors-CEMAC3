@@ -49,6 +49,25 @@ export const routes: Routes = [
       ),
   },
 
+  // Configuration des notifications
+  {
+    path: 'configuration',
+    children: [
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/configuration/notification-config/notification-config.component').then(
+            (m) => m.NotificationConfigComponent
+          ),
+      },
+      {
+        path: '',
+        redirectTo: 'notifications',
+        pathMatch: 'full'
+      }
+    ]
+  },
+
   // Notifications (si vous voulez une page dédiée)
   {
     path: 'notifications',
