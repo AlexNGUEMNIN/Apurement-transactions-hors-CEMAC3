@@ -15,11 +15,11 @@
     <div class="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-lg p-3">
       <div class="flex items-center gap-2">
         <lucide-icon [img]="CheckCircle" class="h-5 w-5 text-green-300"></lucide-icon>
-        <span class="text-sm">{{ configurations.filter(c => c.actif).length }} actives</span>
+        <span class="text-sm">{{ activeConfigurationsCount }} actives</span>
       </div>
       <div class="flex items-center gap-2">
         <lucide-icon [img]="Bell" class="h-5 w-5 text-blue-300"></lucide-icon>
-        <span class="text-sm">{{ canaux.filter(c => c.actif).length }} canaux</span>
+        <span class="text-sm">{{ activeCanauxCount }} canaux</span>
       </div>
     </div>
   </div>
@@ -34,7 +34,7 @@
         { key: 'canaux', label: 'Canaux', icon: MessageSquare },
         { key: 'templates', label: 'Templates', icon: Mail }
       ]"
-      (click)="setActiveTab(tab.key as any)"
+      (click)="setActiveTab(tab.key)"
       [class]="'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ' +
         (activeTab === tab.key 
           ? 'bg-afriland-100 text-afriland-700 border border-afriland-200' 
@@ -56,7 +56,7 @@
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-xl font-semibold text-gray-900">Configurations</h2>
           <button
-            (click)="editConfig({} as NotificationConfig)"
+            (click)="createNewConfig()"
             class="btn-primary flex items-center gap-2"
           >
             <lucide-icon [img]="Plus" class="h-4 w-4"></lucide-icon>
@@ -249,7 +249,7 @@
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-xl font-semibold text-gray-900">Canaux de communication</h2>
           <button
-            (click)="editCanal({} as Canal)"
+            (click)="createNewCanal()"
             class="btn-primary flex items-center gap-2"
           >
             <lucide-icon [img]="Plus" class="h-4 w-4"></lucide-icon>

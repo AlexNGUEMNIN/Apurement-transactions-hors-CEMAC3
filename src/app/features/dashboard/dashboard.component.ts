@@ -81,6 +81,8 @@ export class DashboardComponent implements OnInit {
   kpis: KPI[] = [];
   recentActivities: RecentActivity[] = [];
   statusDistribution: StatusDistribution[] = [];
+Math: any;
+processStatus: any;
 
   constructor(
     private apiService: ApiService,
@@ -94,7 +96,7 @@ export class DashboardComponent implements OnInit {
 
   private loadDashboardData() {
     this.isLoadingKPIs = true;
-    
+
     // Charger les statistiques depuis l'API
     this.apiService.getDashboardStats()
       .pipe(finalize(() => this.isLoadingKPIs = false))
@@ -223,7 +225,7 @@ export class DashboardComponent implements OnInit {
   refreshData() {
     this.isRefreshing = true;
     this.lastUpdate = new Date();
-    
+
     this.dashboardService.refreshData()
       .pipe(finalize(() => this.isRefreshing = false))
       .subscribe({

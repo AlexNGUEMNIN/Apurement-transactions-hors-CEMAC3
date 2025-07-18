@@ -10,7 +10,7 @@ import {
   MessageSquare,
   Smartphone,
   Save,
-  Test,
+  TestTube,
   Eye,
   Edit,
   Plus,
@@ -20,7 +20,7 @@ import {
   Clock,
   Calendar,
   Sliders,
-  Toggle
+  ToggleLeft
 } from 'lucide-angular';
 import { NotificationConfigService, NotificationConfig, NotificationTemplate } from '../../../core/services/notification-config.service';
 import { Canal } from '../../../core/services/api.service';
@@ -42,7 +42,7 @@ export class NotificationConfigComponent implements OnInit, OnDestroy {
   readonly MessageSquare = MessageSquare;
   readonly Smartphone = Smartphone;
   readonly Save = Save;
-  readonly Test = Test;
+  readonly TestTube = TestTube;
   readonly Eye = Eye;
   readonly Edit = Edit;
   readonly Plus = Plus;
@@ -52,7 +52,7 @@ export class NotificationConfigComponent implements OnInit, OnDestroy {
   readonly Clock = Clock;
   readonly Calendar = Calendar;
   readonly Sliders = Sliders;
-  readonly Toggle = Toggle;
+  readonly ToggleLeft = ToggleLeft;
 
   // État de l'interface
   activeTab: 'config' | 'canaux' | 'templates' = 'config';
@@ -160,6 +160,15 @@ export class NotificationConfigComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Getters pour les comptes filtrés
+  get activeConfigurationsCount(): number {
+    return this.configurations.filter(c => c.actif).length;
+  }
+
+  get activeCanauxCount(): number {
+    return this.canaux.filter(c => c.actif).length;
+  }
+
   // Gestion des onglets
   setActiveTab(tab: 'config' | 'canaux' | 'templates') {
     this.activeTab = tab;
@@ -169,6 +178,17 @@ export class NotificationConfigComponent implements OnInit, OnDestroy {
   }
 
   // Gestion des configurations
+  createNewConfig() {
+    this.selectedConfig = null;
+    this.configForm.reset();
+    this.configForm.patchValue({
+      actif: true,
+      delaiJours: 0,
+      frequenceRappel: 0,
+      canaux: []
+    });
+  }
+
   editConfig(config: NotificationConfig) {
     this.selectedConfig = config;
     this.configForm.patchValue(config);
@@ -204,6 +224,15 @@ export class NotificationConfigComponent implements OnInit, OnDestroy {
   }
 
   // Gestion des canaux
+  createNewCanal() {
+    this.canalForm.reset();
+    this.canalForm.patchValue({
+      type: 'EMAIL',
+      actif: true,
+      configuration: {}
+    });
+  }
+
   editCanal(canal: Canal) {
     this.canalForm.patchValue(canal);
   }
@@ -252,6 +281,15 @@ export class NotificationConfigComponent implements OnInit, OnDestroy {
   }
 
   // Gestion des templates
+  createNewTemplate() {
+    this.selectedTemplate = null;
+    this.templateForm.reset();
+    this.templateForm.patchValue({
+      type: 'EMAIL',
+      variables: []
+    });
+  }
+
   editTemplate(template: NotificationTemplate) {
     this.selectedTemplate = template;
     this.templateForm.patchValue(template);
