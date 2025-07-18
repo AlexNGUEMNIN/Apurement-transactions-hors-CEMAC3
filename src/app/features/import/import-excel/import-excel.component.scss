@@ -1,0 +1,535 @@
+// Import Excel Component Styles
+:host {
+  display: block;
+}
+
+// Page Header
+.page-header {
+  background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+  box-shadow: 0 10px 25px rgba(185, 28, 28, 0.3);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>');
+  opacity: 0.6;
+}
+
+// Animations
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.5s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.6s ease-out;
+}
+
+// Step Navigation
+nav {
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+// Step Classes
+.step-completed {
+  background-color: #b91c1c;
+  border-color: #b91c1c;
+  color: white;
+}
+
+.step-current {
+  background-color: #fef2f2;
+  border-color: #b91c1c;
+  color: #b91c1c;
+}
+
+.step-pending {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+  color: #6b7280;
+}
+
+// Upload Zone
+.upload-zone {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-zone::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(185, 28, 28, 0.1),
+    transparent
+  );
+  transition: left 0.6s;
+}
+
+.upload-zone:hover::before {
+  left: 100%;
+}
+
+.upload-zone.drag-over {
+  border-color: #b91c1c;
+  background-color: #fef2f2;
+  transform: scale(1.02);
+}
+
+// File Preview
+.file-preview {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  border: 1px solid #10b981;
+  border-radius: 12px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.file-preview::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+// Progress Bar
+.progress-bar {
+  background: linear-gradient(90deg, #b91c1c, #dc2626);
+  box-shadow: 0 4px 8px rgba(185, 28, 28, 0.3);
+  border-radius: 9999px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+// Processing Animation
+.processing-spinner {
+  border: 4px solid #fecaca;
+  border-top: 4px solid #b91c1c;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// Stats Cards
+.stats-card {
+  padding: 1.5rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--card-color), var(--card-color-dark));
+}
+
+.stats-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.stats-card.blue {
+  --card-color: #3b82f6;
+  --card-color-dark: #1d4ed8;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+.stats-card.green {
+  --card-color: #10b981;
+  --card-color-dark: #059669;
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+}
+
+.stats-card.yellow {
+  --card-color: #f59e0b;
+  --card-color-dark: #d97706;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.stats-card.red {
+  --card-color: #ef4444;
+  --card-color-dark: #dc2626;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+}
+
+.stats-card.purple {
+  --card-color: #8b5cf6;
+  --card-color-dark: #7c3aed;
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+}
+
+// Table Styles
+.data-table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.data-table thead {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+}
+
+.data-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+// Error Section
+.error-section {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fca5a5;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.error-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.error-item {
+  background: white;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.error-item:hover {
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+  border-color: #f87171;
+}
+
+// Template Cards
+.template-card {
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  background: white;
+}
+
+.template-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    transparent 49%,
+    rgba(185, 28, 28, 0.05) 50%,
+    transparent 51%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.template-card:hover::before {
+  opacity: 1;
+}
+
+.template-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+  border-color: #b91c1c;
+}
+
+// Results Section
+.results-section {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.results-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+// Success Icon Animation
+.success-icon {
+  animation: bounce-in 0.8s ease-out;
+}
+
+// Configuration Section
+.config-section {
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+}
+
+.config-input {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.config-input:focus {
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.1);
+  border-color: #b91c1c;
+}
+
+// Navigation Buttons
+.nav-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.6s;
+}
+
+.nav-button:hover::before {
+  left: 100%;
+}
+
+.nav-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nav-button.primary {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  color: white;
+}
+
+.nav-button.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+}
+
+.nav-button.secondary {
+  background: white;
+  border: 2px solid #d1d5db;
+  color: #374151;
+}
+
+.nav-button.secondary:hover:not(:disabled) {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+// Custom Scrollbar
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .page-header {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  nav {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .stats-card {
+    padding: 1rem;
+  }
+
+  .upload-zone {
+    padding: 2rem 1rem;
+  }
+
+  .template-card {
+    margin-bottom: 1rem;
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .template-card {
+    background: #1f2937;
+    border-color: #374151;
+  }
+
+  .data-table thead {
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+    color: white;
+  }
+
+  .config-section {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  }
+}
+
+// Print styles
+@media print {
+  .nav-button,
+  .upload-zone,
+  .template-card {
+    display: none;
+  }
+
+  .data-table,
+  .results-section,
+  .error-section {
+    page-break-inside: avoid;
+  }
+}

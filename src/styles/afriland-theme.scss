@@ -1,0 +1,189 @@
+// Charte graphique Afriland First Bank
+:root {
+  // Couleurs principales
+  --afriland-red-50: #fef2f2;
+  --afriland-red-100: #fee2e2;
+  --afriland-red-200: #fecaca;
+  --afriland-red-300: #fca5a5;
+  --afriland-red-400: #f87171;
+  --afriland-red-500: #ef4444;
+  --afriland-red-600: #dc2626;
+  --afriland-red-700: #b91c1c;
+  --afriland-red-800: #991b1b;
+  --afriland-red-900: #7f1d1d;
+
+  // Couleurs neutres
+  --afriland-gray-50: #f9fafb;
+  --afriland-gray-100: #f3f4f6;
+  --afriland-gray-200: #e5e7eb;
+  --afriland-gray-300: #d1d5db;
+  --afriland-gray-400: #9ca3af;
+  --afriland-gray-500: #6b7280;
+  --afriland-gray-600: #4b5563;
+  --afriland-gray-700: #374151;
+  --afriland-gray-800: #1f2937;
+  --afriland-gray-900: #111827;
+
+  // Couleurs de statut
+  --success-50: #f0fdf4;
+  --success-500: #22c55e;
+  --success-600: #16a34a;
+
+  --warning-50: #fffbeb;
+  --warning-500: #f59e0b;
+  --warning-600: #d97706;
+
+  --error-50: #fef2f2;
+  --error-500: #ef4444;
+  --error-600: #dc2626;
+
+  --info-50: #eff6ff;
+  --info-500: #3b82f6;
+  --info-600: #2563eb;
+
+  // Ombres
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  // Transitions
+  --transition-all: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-colors: color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Classes utilitaires Afriland
+.bg-afriland-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--afriland-red-600) 0%,
+    var(--afriland-red-700) 100%
+  );
+}
+
+.text-afriland-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--afriland-red-600) 0%,
+    var(--afriland-red-700) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hover-lift {
+  transition: var(--transition-all);
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+// Animations d'entrée
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Skeleton loading
+.skeleton {
+  background: linear-gradient(110deg, #e2e8f0 8%, #f1f5f9 18%, #e2e8f0 33%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: calc(200% + 100%) 0;
+  }
+}
+
+// Scrollbar personnalisée
+.custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--afriland-gray-100);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--afriland-red-400);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--afriland-red-500);
+    }
+  }
+}
+
+// États de focus améliorés
+.focus-ring {
+  &:focus {
+    outline: 2px solid var(--afriland-red-500);
+    outline-offset: 2px;
+  }
+}

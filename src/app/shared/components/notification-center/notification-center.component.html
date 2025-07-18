@@ -1,0 +1,70 @@
+<div class="fixed top-4 right-4 z-50">
+      <button (click)="toggleNotifications()"
+              class="relative p-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-afriland-500">
+        <lucide-angular [img]="Bell" class="w-6 h-6 text-gray-600"></lucide-angular>
+        <span *ngIf="unreadCount > 0"
+              class="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+          {{ unreadCount }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Notification Panel -->
+    <div *ngIf="isOpen"
+         class="fixed top-16 right-4 z-50 w-96 max-w-sm bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-hidden">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between p-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
+        <div class="flex items-center space-x-2">
+          <button (click)="markAllAsRead()"
+                  class="text-sm text-afriland-600 hover:text-afriland-700 font-medium">
+            Tout marquer lu
+          </button>
+          <button (click)="toggleNotifications()"
+                  class="p-1 rounded-md hover:bg-gray-100">
+            <lucide-angular [img]="X" class="w-4 h-4 text-gray-500"></lucide-angular>
+          </button>
+        </div>
+      </div>
+
+      <!-- Notifications List -->
+      <div class="max-h-80 overflow-y-auto custom-scrollbar">
+        <div *ngIf="notifications.length === 0" class="p-6 text-center text-gray-500">
+          <lucide-angular [img]="Bell" class="w-12 h-12 mx-auto mb-3 text-gray-300"></lucide-angular>
+          <p>Aucune notification</p>
+        </div>
+
+        <div *ngFor="let notification of notifications; trackBy: trackByNotification"
+             class="p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150"
+             [class.bg-blue-50]="!notification.read">
+
+          <div class="flex items-start space-x-3">
+            <!-- Icon -->
+            <div class="flex-shrink-0 mt-1">
+              <div [ngSwitch]="notification.type" class="w-6 h-6">
+                <lucide-angular *ngSwitchCase="'success'" [img]="CheckCircle" class="text-green-500"></lucide-angular>
+                <lucide-angular *ngSwitchCase="'warning'" [img]="AlertTriangle" class="text-yellow-500"></lucide-angular>
+                <lucide-angular *ngSwitchCase="'error'" [img]="AlertCircle" class="text-red-500"></lucide-angular>
+                <lucide-angular *ngSwitchDefault [img]="Info" class="text-blue-500"></lucide-angular>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-gray-900">{{ notification.title }}</p>
+                <span *ngIf="!notification.read" class="w-2 h-2 bg-blue-600 rounded-full"></span>
+              </div>
+              <p class="text-sm text-gray-600 mt-1">{{ notification.message }}</p>
+              <p class="text-xs text-gray-400 mt-2">{{ formatTimestamp(notification.timestamp) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay -->
+    <div *ngIf="isOpen"
+         (click)="toggleNotifications()"
+         class="fixed inset-0 z-40"></div>

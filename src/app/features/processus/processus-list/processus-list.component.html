@@ -1,0 +1,345 @@
+<!-- Header avec statistiques -->
+<div
+  class="page-header bg-gradient-to-r from-afriland-700 to-afriland-800 text-white p-6 rounded-lg mb-6 shadow-lg"
+>
+  <div
+    class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4"
+  >
+    <div>
+      <h1 class="text-3xl font-bold mb-2 flex items-center gap-3">
+        <lucide-icon [img]="FileText" class="h-8 w-8"></lucide-icon>
+        Gestion des Processus
+      </h1>
+      <p class="text-afriland-100">
+        Suivi et gestion de tous les processus d'apurement
+      </p>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+      <div class="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+        <div class="text-2xl font-bold">{{ stats.total }}</div>
+        <div class="text-sm text-afriland-100">Total</div>
+      </div>
+      <div class="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+        <div class="text-2xl font-bold text-yellow-300">
+          {{ stats.enAttente }}
+        </div>
+        <div class="text-sm text-afriland-100">En attente</div>
+      </div>
+      <div class="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+        <div class="text-2xl font-bold text-green-300">
+          {{ stats.justifies }}
+        </div>
+        <div class="text-sm text-afriland-100">Justifiés</div>
+      </div>
+      <div class="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+        <div class="text-2xl font-bold">{{ stats.delaiMoyen }}j</div>
+        <div class="text-sm text-afriland-100">Délai moyen</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="card">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <!-- Search -->
+    <div class="relative">
+      <lucide-angular
+        [img]="Search"
+        class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+      ></lucide-angular>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="applyFilters()"
+        placeholder="Rechercher..."
+        class="pl-10 form-input"
+      />
+    </div>
+
+    <!-- Status Filter -->
+    <select
+      [(ngModel)]="selectedStatus"
+      (change)="applyFilters()"
+      class="form-input"
+    >
+      <option value="">Tous les statuts</option>
+      <option value="EN_ATTENTE">En attente</option>
+      <option value="ASSIGNE">Assigné</option>
+      <option value="A_MODIFIER">À modifier</option>
+      <option value="REJETE">Rejeté</option>
+      <option value="JUSTIFIE">Justifié</option>
+      <option value="CLOTURE">Clôturé</option>
+    </select>
+
+    <!-- Priority Filter -->
+    <select
+      [(ngModel)]="selectedPriority"
+      (change)="applyFilters()"
+      class="form-input"
+    >
+      <option value="">Toutes les priorités</option>
+      <option value="HAUTE">Haute</option>
+      <option value="NORMALE">Normale</option>
+      <option value="BASSE">Basse</option>
+    </select>
+
+    <!-- Agency Filter -->
+    <select
+      [(ngModel)]="selectedAgency"
+      (change)="applyFilters()"
+      class="form-input"
+    >
+      <option value="">Toutes les agences</option>
+      <option value="Douala">Douala</option>
+      <option value="Yaoundé">Yaoundé</option>
+      <option value="Bafoussam">Bafoussam</option>
+      <option value="Garoua">Garoua</option>
+    </select>
+  </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="card">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div
+          class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center"
+        >
+          <lucide-angular
+            [img]="Clock"
+            class="w-5 h-5 text-white"
+          ></lucide-angular>
+        </div>
+      </div>
+      <div class="ml-5">
+        <p class="text-sm font-medium text-gray-500">En attente</p>
+        <p class="text-2xl font-semibold text-gray-900">
+          {{ getStatusCount("EN_ATTENTE") }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div
+          class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center"
+        >
+          <lucide-angular
+            [img]="Edit"
+            class="w-5 h-5 text-white"
+          ></lucide-angular>
+        </div>
+      </div>
+      <div class="ml-5">
+        <p class="text-sm font-medium text-gray-500">Assignés</p>
+        <p class="text-2xl font-semibold text-gray-900">
+          {{ getStatusCount("ASSIGNE") }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div
+          class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center"
+        >
+          <lucide-angular
+            [img]="CheckCircle"
+            class="w-5 h-5 text-white"
+          ></lucide-angular>
+        </div>
+      </div>
+      <div class="ml-5">
+        <p class="text-sm font-medium text-gray-500">Justifiés</p>
+        <p class="text-2xl font-semibold text-gray-900">
+          {{ getStatusCount("JUSTIFIE") }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div
+          class="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center"
+        >
+          <lucide-angular
+            [img]="XCircle"
+            class="w-5 h-5 text-white"
+          ></lucide-angular>
+        </div>
+      </div>
+      <div class="ml-5">
+        <p class="text-sm font-medium text-gray-500">Rejetés</p>
+        <p class="text-2xl font-semibold text-gray-900">
+          {{ getStatusCount("REJETE") }}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Processus Table -->
+<div class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Processus
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Client
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Statut
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Priorité
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Date
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Montant
+          </th>
+          <th
+            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <tr
+          *ngFor="let processus of filteredProcessus; trackBy: trackByProcessus"
+          class="hover:bg-gray-50 transition-colors duration-150"
+        >
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div>
+              <div class="text-sm font-medium text-gray-900">
+                {{ processus.numeroProcessus }}
+              </div>
+              <div class="text-sm text-gray-500">{{ processus.agence }}</div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div>
+              <div class="text-sm font-medium text-gray-900">
+                {{ processus.nomClient }}
+              </div>
+              <div class="text-sm text-gray-500">{{ processus.matricule }}</div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span [class]="getStatusBadgeClass(processus.statut)">
+              {{ getStatusLabel(processus.statut) }}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span [class]="getPriorityBadgeClass(processus.priorite)">
+              {{ getPriorityLabel(processus.priorite) }}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {{ processus.dateSubmission | date : "short" }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            {{ processus.montant | currency : "XAF" : "symbol" : "1.0-0" }}
+          </td>
+          <td
+            class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+          >
+            <div class="flex justify-end space-x-2">
+              <button
+                [routerLink]="['/processus', processus.id]"
+                class="text-afriland-600 hover:text-afriland-900 p-1 rounded"
+              >
+                <lucide-angular [img]="Eye" class="w-4 h-4"></lucide-angular>
+              </button>
+              <button
+                *ngIf="canEdit(processus)"
+                class="text-gray-600 hover:text-gray-900 p-1 rounded"
+              >
+                <lucide-angular [img]="Edit" class="w-4 h-4"></lucide-angular>
+              </button>
+              <button
+                *ngIf="canDelete(processus)"
+                (click)="deleteProcessus(processus)"
+                class="text-red-600 hover:text-red-900 p-1 rounded"
+              >
+                <lucide-angular [img]="Trash2" class="w-4 h-4"></lucide-angular>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="filteredProcessus.length === 0" class="text-center py-12">
+    <lucide-angular
+      [img]="Search"
+      class="w-12 h-12 text-gray-400 mx-auto mb-4"
+    ></lucide-angular>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">
+      Aucun processus trouvé
+    </h3>
+    <p class="text-gray-500 mb-4">
+      Essayez de modifier vos critères de recherche
+    </p>
+    <a routerLink="/processus/nouveau" class="btn-primary">
+      Créer un nouveau processus
+    </a>
+  </div>
+</div>
+
+<!-- Pagination -->
+<div
+  *ngIf="filteredProcessus.length > 0"
+  class="flex items-center justify-between"
+>
+  <div class="text-sm text-gray-700">
+    Affichage de {{ (currentPage - 1) * pageSize + 1 }} à
+    {{ getDisplayedItemsEnd() }}
+    sur {{ filteredProcessus.length }} résultats
+  </div>
+  <div class="flex space-x-2">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 1"
+      class="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Précédent
+    </button>
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage * pageSize >= filteredProcessus.length"
+      class="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Suivant
+    </button>
+  </div>
+</div>

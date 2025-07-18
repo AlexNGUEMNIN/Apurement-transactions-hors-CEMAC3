@@ -1,0 +1,193 @@
+<!-- Navigation Sidebar -->
+<nav class="navigation-sidebar" [class.open]="isOpen">
+  <!-- Header -->
+  <div class="nav-header">
+    <div class="logo-container">
+      <div class="logo">
+        <span>AF</span>
+      </div>
+      <div class="brand-text">
+        <div>Afriland First Bank</div>
+        <div class="subtitle">Apurement CEMAC</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Menu -->
+  <div class="nav-menu">
+    <!-- Section principale -->
+    <div class="nav-section">
+      <div class="section-title">Principal</div>
+
+      <div class="nav-item">
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="active"
+          class="nav-link"
+          (click)="closeSidebarOnMobile()"
+        >
+          <lucide-angular [img]="BarChart3" class="nav-icon"></lucide-angular>
+          <span class="nav-text">Tableau de bord</span>
+        </a>
+      </div>
+
+      <div class="nav-item">
+        <a
+          routerLink="/notifications"
+          routerLinkActive="active"
+          class="nav-link"
+          (click)="closeSidebarOnMobile()"
+        >
+          <lucide-angular [img]="Bell" class="nav-icon"></lucide-angular>
+          <span class="nav-text">Notifications</span>
+          <span *ngIf="notificationCount > 0" class="nav-badge">{{
+            notificationCount
+          }}</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Section processus -->
+    <div class="nav-section">
+      <div class="section-title">Processus</div>
+
+      <div class="nav-item">
+        <a
+          routerLink="/processus"
+          routerLinkActive="active"
+          class="nav-link"
+          (click)="closeSidebarOnMobile()"
+        >
+          <lucide-angular [img]="FileText" class="nav-icon"></lucide-angular>
+          <span class="nav-text">Processus d'apurement</span>
+          <span *ngIf="pendingProcessCount > 0" class="nav-badge">{{
+            pendingProcessCount
+          }}</span>
+        </a>
+      </div>
+
+      <div class="nav-item">
+        <a
+          routerLink="/processus/nouveau"
+          routerLinkActive="active"
+          class="nav-link"
+          (click)="closeSidebarOnMobile()"
+        >
+          <lucide-angular [img]="Plus" class="nav-icon"></lucide-angular>
+          <span class="nav-text">Nouveau processus</span>
+        </a>
+      </div>
+
+      <div class="nav-item">
+        <a
+          routerLink="/import"
+          routerLinkActive="active"
+          class="nav-link"
+          (click)="closeSidebarOnMobile()"
+        >
+          <lucide-angular [img]="Upload" class="nav-icon"></lucide-angular>
+          <span class="nav-text">Import de données</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Section consultation -->
+    <div class="nav-section">
+      <div class="section-title">Consultation</div>
+
+      <div class="nav-item">
+        <a
+          routerLink="/consultation"
+          routerLinkActive="active"
+          class="nav-link"
+          (click)="closeSidebarOnMobile()"
+        >
+          <lucide-angular [img]="Search" class="nav-icon"></lucide-angular>
+          <span class="nav-text">Consultation</span>
+        </a>
+      </div>
+
+      <div class="nav-item">
+        <a
+          routerLink="/rapports"
+          routerLinkActive="active"
+          class="nav-link"
+          (click)="closeSidebarOnMobile()"
+        >
+          <lucide-angular
+            [img]="FileBarChart"
+            class="nav-icon"
+          ></lucide-angular>
+          <span class="nav-text">Rapports</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Section administration -->
+    <div class="nav-section">
+      <div class="section-title">Administration</div>
+
+      <div class="nav-item">
+        <a
+          routerLink="/utilisateurs"
+          routerLinkActive="active"
+          class="nav-link"
+          (click)="closeSidebarOnMobile()"
+        >
+          <lucide-angular [img]="Users" class="nav-icon"></lucide-angular>
+          <span class="nav-text">Utilisateurs</span>
+        </a>
+      </div>
+
+      <div class="nav-item">
+        <a
+          routerLink="/parametres"
+          routerLinkActive="active"
+          class="nav-link"
+          (click)="closeSidebarOnMobile()"
+        >
+          <lucide-angular [img]="Settings" class="nav-icon"></lucide-angular>
+          <span class="nav-text">Paramètres</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Profile -->
+  <div class="user-profile">
+    <div class="profile-container" (click)="toggleUserMenu()">
+      <div class="profile-avatar">
+        <span>{{ currentUser.initials }}</span>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name">{{ currentUser.name }}</div>
+        <div class="profile-role">{{ currentUser.role }}</div>
+      </div>
+      <lucide-angular [img]="ChevronDown" class="profile-menu"></lucide-angular>
+    </div>
+
+    <!-- User menu dropdown -->
+    <div *ngIf="showUserMenu" class="user-menu-dropdown">
+      <a href="#" class="menu-item" (click)="viewProfile()">
+        <lucide-angular [img]="User" class="menu-icon"></lucide-angular>
+        <span>Mon profil</span>
+      </a>
+      <a href="#" class="menu-item" (click)="logout()">
+        <lucide-angular [img]="LogOut" class="menu-icon"></lucide-angular>
+        <span>Se déconnecter</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile overlay -->
+<div
+  *ngIf="isOpen"
+  class="mobile-overlay lg:hidden"
+  (click)="closeSidebar()"
+></div>
+
+<!-- Mobile toggle button -->
+<button class="mobile-toggle lg:hidden" (click)="toggleSidebar()">
+  <lucide-angular [img]="Menu" class="w-6 h-6"></lucide-angular>
+</button>
